@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 import requests 
+import pandas as pd
 from bs4 import BeautifulSoup 
 
 # # Scrapping Product Reviews from Amazon
@@ -17,7 +18,7 @@ from bs4 import BeautifulSoup
 # In[33]:
 
 
-search_query="nike+shoes+men"
+search_query="turtles+climate+adventure"
 
 
 # In[34]:
@@ -25,7 +26,11 @@ search_query="nike+shoes+men"
 
 base_url="https://www.amazon.com/s?k="
 
+referer_link = 'https://www.amazon.com/s?k=turtles+climate+adventure&crid=2KGU6WPHWFDL7&sprefix=turtles+climate+adventure%2Caps%2C137&ref=nb_sb_noss_1'
 
+id_class = "sg-col-20-of-24 s-result-item s-asin sg-col-0-of-12 sg-col-16-of-20 sg-col s-widget-spacing-small sg-col-12-of-16"
+
+num_review_pages = 2
 # In[35]:
 
 
@@ -36,7 +41,7 @@ url
 # In[40]:
 
 
-header={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36','referer':'https://www.amazon.com/s?k=nike+shoes+men&crid=28WRS5SFLWWZ6&sprefix=nike%2Caps%2C357&ref=nb_sb_ss_organic-diversity_2_4'}
+header={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36','referer':referer_link}
 
 
 # In[41]:
@@ -114,23 +119,23 @@ def Searchreviews(review_link):
 # In[50]:
 
 
-product_names=[]
-response=getAmazonSearch('nike+shoes+men')
-soup=BeautifulSoup(response.content)
-for i in soup.findAll("span",{'class':'a-size-base-plus a-color-base a-text-normal'}): # the tag which is common for all the names of products
-    product_names.append(i.text) #adding the product names to the list
+# product_names=[]
+# response=getAmazonSearch('nike+shoes+men')
+# soup=BeautifulSoup(response.content)
+# for i in soup.findAll("span",{'class':'a-size-base-plus a-color-base a-text-normal'}): # the tag which is common for all the names of products
+#     product_names.append(i.text) #adding the product names to the list
 
 
 # In[51]:
 
 
-product_names
+#product_names
 
 
 # In[52]:
 
 
-len(product_names)
+#len(product_names)
 
 
 # #### The method of extracting data-asin numbers are similar to that of product names. Only the tag details have to be changed in findall()
@@ -138,9 +143,9 @@ len(product_names)
 # In[53]:
 
 data_asin=[]
-response=getAmazonSearch('nike+shoes+men')
+response=getAmazonSearch(search_query)
 soup=BeautifulSoup(response.content, "html.parser")
-for i in soup.findAll("div",{'class':"sg-col-4-of-24 sg-col-4-of-12 s-result-item s-asin sg-col-4-of-16 sg-col s-widget-spacing-small sg-col-4-of-20"}):
+for i in soup.findAll("div",{'class':id_class}):
     data_asin.append(i['data-asin'])
 
 
@@ -170,7 +175,7 @@ len(data_asin)
 link=[]
 for i in range(1):
     response=Searchasin(data_asin[i])
-    soup=BeautifulSoup(response.content)
+    soup=BeautifulSoup(response.content, "html.parser")
     for i in soup.findAll("a",{'data-hook':"see-all-reviews-link-foot"}):
         link.append(i['href'])
 
@@ -194,9 +199,9 @@ link
 
 reviews=[]
 for j in range(len(link)):
-    for k in range(100):
+    for k in range(num_review_pages):
         response=Searchreviews(link[j]+'&pageNumber='+str(k))
-        soup=BeautifulSoup(response.content)
+        soup=BeautifulSoup(response.content, "html.parser")
         for i in soup.findAll("span",{'data-hook':"review-body"}):
             reviews.append(i.text)
 
@@ -229,7 +234,7 @@ review_data.head(5)
 # In[66]:
 
 
-review_data.shape
+#review_data.shape
 
 
 # In[78]:
