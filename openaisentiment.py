@@ -1,7 +1,7 @@
 from openai import OpenAI
 import pandas as pd
 
-client = OpenAI(api_key='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')
+client = OpenAI() #ENTER API KEY HERE
 
 df = pd.read_csv('reviews-data.csv', delimiter=',')
 reviews = df[['en_content']]
